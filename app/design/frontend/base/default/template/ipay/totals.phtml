@@ -1,18 +1,41 @@
-<?php //0046a
-if(!extension_loaded('ionCube Loader')){$__oc=strtolower(substr(php_uname(),0,3));$__ln='ioncube_loader_'.$__oc.'_'.substr(phpversion(),0,3).(($__oc=='win')?'.dll':'.so');if(function_exists('dl')){@dl($__ln);}if(function_exists('_il_exec')){return _il_exec();}$__ln='/ioncube/'.$__ln;$__oid=$__id=realpath(ini_get('extension_dir'));$__here=dirname(__FILE__);if(strlen($__id)>1&&$__id[1]==':'){$__id=str_replace('\\','/',substr($__id,2));$__here=str_replace('\\','/',substr($__here,2));}$__rd=str_repeat('/..',substr_count($__id,'/')).$__here.'/';$__i=strlen($__rd);while($__i--){if($__rd[$__i]=='/'){$__lp=substr($__rd,0,$__i).$__ln;if(file_exists($__oid.$__lp)){$__ln=$__lp;break;}}}if(function_exists('dl')){@dl($__ln);}}else{die('The file '.__FILE__." is corrupted.\n");}if(function_exists('_il_exec')){return _il_exec();}echo('Site error: the file <b>'.__FILE__.'</b> requires the ionCube PHP Loader '.basename($__ln).' to be installed by the website operator. If you are the website operator please use the <a href="http://www.ioncube.com/lw/">ionCube Loader Wizard</a> to assist with installation.');exit(199);
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+/**
+ * @see Mage_Checkout_Block_Cart_Totals
+ */
 ?>
-HR+cPmTWFP6HjeMc5DkeicZM2IxxrYs68HtNvzkn7eaeu2R758uZIVCz5x2j+GwThiK1O/L5U9vs
-tZXyYCkBual3/Afx+1lBFSMylFmnjR3FpjghBk8UthK3cnfmAi3bjH8qerS30MXxC8MGyzMq3y4U
-kE+xHZwhm9sYX9h0dHgWX49merUk+j7oV9Dnp+qEGT8wMzh0RIKAfnOXrmfvBKD1z7ISPfY4qJ7x
-qtsiZ6YssElF0sWAqVXKnPSa2Wvz1Gn27LzaZoShZ5FGLWyEfGwFtb+CfFFilGZ+ZtpXv0jm6RW6
-NAWfZo10pmZLZ0TVoK8l/f4aSoBlWE8YRKKPuFkWprWCvehvPu3gDw9secyELxgf0RCQwa6r20Xa
-xzOgp31DObP1E126owv1Ah4a7GrF6oLWEHJ3B+P7gPDfOL1cuXC950V0cYlAzoj10QgNRY+0mSWb
-+6u+jpjDSDUPjAo5IYEcpEx6NVF8T1gV1DL3rfQaPmvP9ugGvX+KL0Ia/Dme9+g6hq8KIlZmgkgc
-xrkM/ZQZmqLyFLQNpYatmZxDjIya4g3VOAO45fbend9idPrJuYwGETyCK9yBRpN1H5viZbcoh/M7
-v9Ohzy4FajGJ1MYxGznVitYE34avCkqXe9oBK2sY/Oc4mfuUk4loB1awVHrrGLIOTJ6RK8rgUnx5
-035WbM0XvhZckG2itH1QM6QGOfpMfWa7y2j8mtyIpNgoElHGbqVTis99WequEV+oGhrtRqKEorx8
-026IxWYPklQDo+NUKKmuVJ14LeFj7Abqw4HoD+IsxjEH3+gB7SoGX5nVH/W9NLcYdMr5YPZyI9Sx
-HY+ni0NRRza4m9wPn/GdWLD9pD5FOhfZikcsrp6w3mgfS70eGG8wqia+7iOnl4WV0L9vLoIjEneb
-XK7uZKwSp1YWkk6ycyUmPkupREjDw9kUdDqDmu9X9LmLxaOkriK4fdVW6PrPWZ8Z4q/7FR10mbUz
-dzkCpSFXx/egYsoVcy0vhFJ1FK38K2pLYrQSC041MVcI2Kh1ykj23qwSfmQoNjkmfCSEynHEgUb5
-ZV3R5BtfRVRg6/pxJf9oY2KQCyRPXBMP7enAfnaTRUe=
+<?php if ($this->getTotals()): ?>
+<tfoot>
+    <?php $_colspan = $this->helper('tax')->displayCartBothPrices() ? 5 : 3; ?>
+
+    <?php echo $this->renderTotals(null, $_colspan); ?>
+    <?php echo $this->renderTotals('footer', $_colspan); ?>
+
+    <?php if ($this->needDisplayBaseGrandtotal()):?>
+    <?php endif?>
+</tfoot>
+<?php endif; ?>
