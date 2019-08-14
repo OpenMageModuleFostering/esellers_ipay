@@ -1,0 +1,407 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     base_default
+ * @copyright   Copyright (c) 2011 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+
+
+<?php
+class auctionSession
+{		
+	private $serverUrl;
+	private $soapAuction;
+	
+	public function __construct($serverUrl, $soapAuction)
+	{
+		$this->serverUrl = $serverUrl;
+		$this->soapAuction = $soapAuction;	
+	}
+	
+	/**	sendHttpRequest
+		Sends a HTTP request to the server for this session
+		Input:	$requestBody
+		Output:	The HTTP Response as a String
+	*/
+	public function sendHttpRequest($requestBody)
+	{
+		//build auction headers using variables passed via constructor
+		$headers = $this->buildAuctionHeaders(strlen($requestBody));
+				
+		//initialise a CURL session
+		$connection = curl_init();
+		
+				 
+		//set the server we are using (could be Sandbox or Production server)
+		curl_setopt($connection, CURLOPT_URL, $this->serverUrl);
+		
+		//stop CURL from verifying the peer's certificate
+		curl_setopt($connection, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($connection, CURLOPT_SSL_VERIFYHOST, 0);
+		
+		//set the headers using the array of headers
+		curl_setopt($connection, CURLOPT_HTTPHEADER, $headers);
+		
+		//set method as POST
+		curl_setopt($connection, CURLOPT_POST, 1);
+		
+		//set the XML body of the request
+		curl_setopt($connection, CURLOPT_POSTFIELDS, $requestBody);
+		
+		//set it to return the transfer as a string from curl_exec
+		curl_setopt($connection, CURLOPT_RETURNTRANSFER, 1);
+		
+		//Send the Request
+		$response = curl_exec($connection);
+		
+		//close the connection
+		curl_close($connection);
+		
+		//return the response
+		return $response;
+	}
+	
+	private function buildAuctionHeaders($requestBodyLength)
+	{
+		$headers = array (
+			"Content-Type: text/xml; charset=utf-8",
+			"Content-Length: $requestBodyLength",
+			"SOAPAction: $this->soapAuction"
+		);
+		
+		return $headers;
+	}
+}
+?>	
+<?php 
+
+ /*
+ * requestCartNo
+ * 상품정보를 전달하고 발급된 카트번호를 요청합니다.
+ * http://www.auction.co.kr/IpayService/Ipay/InsertIpayOrder  
+ * 서비스 문의시에 Request SOAP과 Response SOAP을 보내주시면 됩니다.
+ * 옥션 API 개발자 커뮤니티 : http://api.auction.co.kr/developer
+ */
+class requestCartNo
+{ 	  	 
+	private $serverUrl = "https://api.auction.co.kr/ArcheSystem/IpayService.asmx";	//실제 운영 서버 주소
+	private $action = "http://www.auction.co.kr/IpayService/Ipay/InsertIpayOrder";  
+	private $ticket; 
+	
+	
+	public function __construct($ticket){ 
+		$this->ticket = $ticket;
+	}
+	
+	
+	/*** 서비스를 실행(호출)한다.*/ 
+	public function doService($orderQuery){ 
+  
+	// Set Request SOAP Message
+	$requestXmlBody =  '<?xml version="1.0" encoding="utf-8"?>	';
+	$requestXmlBody .=  '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> ';
+	$requestXmlBody .=  '  <soap:Header>		';
+	$requestXmlBody .=  '   <EncryptedTicket xmlns="http://www.auction.co.kr/Security">		';
+	$requestXmlBody .=	'   <Value>' . $this->ticket .  '</Value> ';
+	$requestXmlBody .=  '		</EncryptedTicket> ';
+	$requestXmlBody .=  '	</soap:Header> ';
+	$requestXmlBody .=  '  <soap:Body>		';
+	$requestXmlBody .=  '    <InsertIpayOrder xmlns="http://www.auction.co.kr/IpayService/Ipay">';
+	$requestXmlBody .=  $orderQuery; 
+	$requestXmlBody .=  '</InsertIpayOrder> ';
+	$requestXmlBody .=  '</soap:Body> ';
+	$requestXmlBody .=  '</soap:Envelope> '; 
+
+	//echo $requestXmlBody;
+	
+			
+	$requestXmlBody = str_replace("&", "&amp;", $requestXmlBody);
+
+
+	// Load the XML Document to Print Request SOAP
+	$requestDoc = new DomDocument();
+	$requestDoc->loadXML($requestXmlBody);
+	
+	// Print Request SOAP 
+	//echo "<PRE>";
+	//echo "<STRONG>* REQUEST SOAP</STRONG><BR>";
+	//echo htmlentities ($requestDoc->saveXML());
+	//echo "</PRE>";
+	 
+	
+ 	//Create a new auction session with all details pulled in from included auctionSession.php
+	$session = new auctionSession($this->serverUrl, $this->action);
+	
+     
+	//send the request and get response
+	$responseXml = $session->sendHttpRequest($requestXmlBody);
+    
+	// Process Response
+	return $this->processResponse ($responseXml);
+	}
+	
+	/**
+	 * Request SOAP Message를 서버에 요청하고 받아온 Response SOAP Message를 가지고 처리한다.
+	 * $responseXml	: Response SOAP Message
+	 */
+	private function processResponse($responseXml){
+		
+		if(stristr($responseXml, 'HTTP 404') || $responseXml == '') {
+			die('<P>$responseXml Error sending request');
+		} else {
+			//Xml string is parsed and creates a DOM Document object
+			$responseDoc = new DomDocument();
+			$responseDoc->loadXML($responseXml);  
+			
+			
+			
+			// Print Response SOAP  
+			//echo "<PRE>";
+			//echo "<STRONG>* RESPONSE SOAP</STRONG><BR>";
+			//echo "<BR>".iconv("UTF-8", "EUC-KR", urldecode (htmlentities ($responseDoc->saveXML(), ENT_NOQUOTES, "UTF-8")) );
+			//echo "</PRE>";			
+		  
+			
+			// Error 
+			$eleFaultcode = $responseDoc->getElementsByTagName('faultcode')->item(0);			
+			$eleFaultstring = $responseDoc->getElementsByTagName('faultstring')->item(0); 
+			$eleResult =  $responseDoc->getElementsByTagName('InsertIpayOrderResult')->item(0); 
+			
+			if ((empty($eleFaultcode)) && (!empty($eleResult)))
+			{   
+				return $eleResult->firstChild->nodeValue; 
+			}
+			else{			 
+				$this->processError($eleFaultcode, $eleFaultstring);
+			}			
+		} 
+		return "";
+	}
+	
+	
+	/**
+	 * 에러 처리를 한다.
+	 * $eleFaultcode	: 오류 코드 메시지
+	 * $eleFaultstring	: 오류 메시지
+	 */
+	private function processError($eleFaultcode, $eleFaultstring){
+		if ($eleFaultcode != null) echo "faultcode : ".iconv("UTF-8", "EUC-KR", urldecode (htmlentities ($eleFaultcode->nodeValue, ENT_NOQUOTES, "UTF-8")))."<BR>";
+		if ($eleFaultstring != null) echo "faultstring : ".iconv("UTF-8", "EUC-KR", urldecode (htmlentities ($eleFaultstring->nodeValue, ENT_NOQUOTES, "UTF-8")))."<BR>";
+	}
+}	
+?>
+
+
+
+<?php
+/**
+ * Shopping cart template
+ *
+ * @see Mage_Checkout_Block_Cart
+ */
+?>
+
+
+
+
+<div class="cart">
+    <div class="page-title title-buttons">
+        <?php if(!$this->hasError()): ?>
+        <ul class="checkout-types">
+        <?php foreach ($this->getMethods('top_methods') as $method): ?>
+            <?php if ($methodHtml = $this->getMethodHtml($method)): ?>
+            <li><?php echo $methodHtml; ?></li>
+            <?php endif; ?>
+        <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+    </div>
+    <?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
+    <?php echo $this->getChildHtml('form_before') ?>
+    <form action="<?php echo $this->getUrl('checkout/cart/updatePost') ?>" method="post">
+        <fieldset>
+            <table id="shopping-cart-table" class="data-table cart-table">
+                <col width="1" />
+                <col />
+                <col width="1" />
+            <?php if ($this->helper('wishlist')->isAllowInCart()) : ?>
+                <col width="1" />
+            <?php endif ?>
+            <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="1" />
+            <?php endif; ?>
+            <?php if ($this->helper('tax')->displayCartPriceInclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="1" />
+            <?php endif; ?>
+                <col width="1" />
+            <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="1" />
+            <?php endif; ?>
+            <?php if ($this->helper('tax')->displayCartPriceInclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="1" />
+            <?php endif; ?>
+                <col width="1" />
+
+            <?php $mergedCells = ($this->helper('tax')->displayCartBothPrices() ? 2 : 1); ?>
+                <thead>
+                    <?php if ($this->helper('tax')->displayCartBothPrices()): ?>
+                    <tr>
+                        <th class="a-right"><?php echo $this->helper('tax')->getIncExcTaxLabel(false) ?></th>
+                        <th><?php echo $this->helper('tax')->getIncExcTaxLabel(true) ?></th>
+                        <th class="a-right"><?php echo $this->helper('tax')->getIncExcTaxLabel(false) ?></th>
+                        <th><?php echo $this->helper('tax')->getIncExcTaxLabel(true) ?></th>
+                    </tr>
+                    <?php endif; ?>
+                </thead>
+                <tbody>
+
+
+
+<?
+
+		$itemsQuery = "<ITEMS>";  
+
+
+		/*
+		' 상품셋팅정보 작성
+		*/
+		/*  	 
+			$ticket = API 인증티켓;
+			$price = 상품가격;
+			$sellerid = 이용자 아이디
+		*/  
+
+                $quote = Mage::getSingleton('checkout/cart')->getQuote(); 
+                $address = $quote->getAddress(); 
+                $method = Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingMethod();
+                $shipfee = Ceil(Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingAmount());
+		$title=Mage::getSingleton('checkout/session')->getQuote()->getShippingAddress()->getShippingMethod();
+		
+		if($title=="ipay_ipay")
+			$shiptype=2;
+		else if($title=="freeshipping_freeshipping")
+			$shiptype=1;
+		else 
+			$shiptype=3;
+
+		echo "aaaa".$title;
+
+		//$shipfee	= Mage::getStoreConfig("carriers/ipay/handling_fee");
+		$shiptype	= Mage::getStoreConfig("payment/ipay/shiptype");
+		$paymethod	= Mage::getStoreConfig("payment/ipay/ipay_payment_method");
+		$ticket		= Mage::getStoreConfig("payment/ipay/certification");
+		$sellerid	= Mage::getStoreConfig("payment/ipay/auctionid");
+
+		if($ticket != "" && $sellerid !="" ){                
+			if($shiptype==1 || $shiptype==2)
+				$shipfee=0;
+
+			$price=0;
+
+        	        foreach($this->getItems() as $_item){
+				$optionValue="";
+				$this->getItemHtml($_item);
+				$renderer = $this->getItemRenderer($_item->getProductType());
+				 if ($_options = $renderer->getOptionList()){
+					foreach ($_options as $_option){
+						$_formatedOptionValue = $renderer->getFormatedOptionValue($_option);
+						$optionValue .= $renderer->htmlEscape($_option['label']);
+						$optionValue .= "(".$_formatedOptionValue['value'].")";
+
+						 if (isset($_formatedOptionValue['full_view'])){
+							$optionValue .= $_option['label'] ;
+							$optionValue .= $_formatedOptionValue['full_view'];
+						}
+					}
+			 	}
+
+				$sum       += (int)$_item->getCalculationPrice()*$_item->getQty();
+				
+				//$price      = Mage::getModel('directory/currency')->formatTxt($sum,array('display' => Zend_Currency::NO_SYMBOL));
+                                //$item_price = (int)Mage::getModel('directory/currency')->formatTxt($_item->getCalculationPrice(),array('display' => Zend_Currency::NO_SYMBOL));
+				$price	    = (int)$sum;
+				$item_price = (int)$_item->getCalculationPrice();
+			       
+
+
+        			$itemName = str_replace("'","",$_item->getProduct()->getName());
+        			$itemName = str_replace("\"","",$_item->getProduct()->getName());
+				$itemName = $_item->getProduct()->getName();
+        			$itemsQuery = $itemsQuery   
+					. "<IpayServiceItems item_name=" . "\""."AAA"."\""
+					. " ipay_itemno=" . "'".$_item->getProduct()->getId()."'"  
+					. " item_option_name=" . "'222'" 
+					. " item_price='" . str_replace(",","",$item_price) . "'"
+					. " order_qty='". $_item->getQty() ."'"  
+					. " item_url=" . "'".Mage::getStoreConfig("web/unsecure/base_url")."'"
+				        . " partner_code='ESELLERS'"        
+				.	" thumbnail_url=" . "'".Mage::getBaseUrl('media')."catalog/product".Mage::getModel('catalog/product')->load($_item->getProductId())->getThumbnail()."'" . "/> ";   
+                	}
+                	echo $itemQuery;
+		}else{
+			echo "<script>alert('There is no certified key or auction id');window.close()</script>";
+		}
+?>
+                </tbody>
+            </table>
+            <script type="text/javascript">decorateTable('shopping-cart-table')</script>
+        </fieldset>
+    </form>
+
+</div>
+
+
+
+<?php  
+
+$price = str_replace(",","",$price) + $shipfee;
+
+/*	상품정보 xml 셋팅 */
+$orderQuery = "<ORDER payment_rule='$paymethod' pay_price='$price' shipping_price='$shipfee' shipping_type='3' back_url='www.url.co.kr' service_url='www.url.com/receiveXml.asp' redirect_url='".Mage::getStoreConfig("web/unsecure/base_url")."index.php/ipay/payment/review' move_to_redirect_url='true'/>";
+
+$orderQuery = $orderQuery . $itemsQuery . "</ITEMS>"; 
+
+$requestCartNo = new requestCartNo ($ticket);
+
+//echo "resultCode:".$requestCartNo."<BR>";
+$requestResult = $requestCartNo->doService($orderQuery);							// 서비스를 호출하고 새 카트번호를 가져온다
+
+?>
+<html>
+<body>
+<form name="frm" method="get" action="https://ssl.auction.co.kr/ipay/IpayStdOrder.aspx">
+<input type="hidden" name="cartnos" value="<?php echo $requestResult ?>">
+<input type="hidden" name="sellerid" value="<?php echo $sellerid ?>">
+<input type="hidden" name="price" value="<?php echo $price ?>">
+<p align=center>
+	<img name=:myImg" src="loading.gif" style="border=0"/><br />
+        
+	<b>Please Wait a Minute...</b>
+</p>
+</form>
+<br /><br /><br /><br />
+</body>
+<script> 
+document.frm.submit(); 
+</script>
+</html>

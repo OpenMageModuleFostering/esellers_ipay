@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<config>
+    <modules>
+        <Esellers_Salesgrid>
+            <version>1.0.0.0</version>
+        </Esellers_Salesgrid>
+    </modules>
+    <admin>
+        <routers>
+            <salesgrid>
+                <!-- should be set to "admin" when overloading admin stuff (?) -->
+                <use>admin</use>
+                <args>
+                    <module>Esellers_Salesgrid</module>
+                    <!-- This is used when "catching" the rewrite above -->
+                    <frontName>salesgrid</frontName>
+                </args>
+            </salesgrid>
+        </routers>
+    </admin>
+    <global>
+        <blocks>
+          <salesgrid>
+            <class>Esellers_Salesgrid_Block</class>
+          </salesgrid>
+        </blocks>
+        <helpers>
+            <salesgrid>
+                <class>Esellers_Salesgrid_Helper</class>
+            </salesgrid>
+        </helpers>
+
+
+        <models>
+            <salesgrid>
+                <class>Esellers_Salesgrid_Model</class>
+            </salesgrid>
+        </models>        
+        
+
+        <resources>
+            <salesgrid_setup>
+                <setup>
+                    <module>Esellers_Salesgrid</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </salesgrid_setup>
+            <salesgrid_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </salesgrid_write>
+            <salesgrid_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </salesgrid_read>
+        </resources>
+    </global>
+    
+    <adminhtml>
+        <layout>
+            <updates>
+                <salesgrid>
+                    <file>esellers_salesgrid.xml</file>
+                </salesgrid>
+            </updates>
+        </layout>
+        <menu>
+            <sales module="salesgrid">
+                <children>
+                    <order module="salesgrid" translate="title">
+                        <title>Manage Products*</title>
+                        <sort_order>0</sort_order>
+                        <action>salesgrid/sales_order</action>
+                    </order>
+                </children>
+            </sales>
+        </menu>
+    </adminhtml>    
+</config>

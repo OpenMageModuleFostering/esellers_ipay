@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<config>
+    <modules>
+        <Esellers_Ipay>
+            <active>true</active>
+            <codePool>community</codePool>
+            <version>1.0.0</version>
+            <depends> 
+                <Mage_Payment /> 
+                <Mage_Adminhtml />
+            </depends>            
+        </Esellers_Ipay>
+    </modules>
+</config>

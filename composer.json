@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Esellers_Ipay",
+    "type": "magento-module",
+    "license": "free",
+    "homepage": "",
+    "description": "Korea Ipay Extension",
+    "authors": [
+    {
+        "name": "YoungJun",
+        "email": "gwgw123@esellers.co.kr"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

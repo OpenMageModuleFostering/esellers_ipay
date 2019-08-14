@@ -1,0 +1,10 @@
+<?php
+	$enable_escrow	= Mage::getStoreConfig("payment/ipay/escrow_enable");
+	$escrow_img	= Mage::getStoreConfig("payment/ipay/escrow");
+?>
+<div >
+<?php if($enable_escrow==1){?>
+<p align="center"><a href="http://ipay.auction.co.kr/Popup/JoinConfirm2.aspx" target="_ipayLogo"><img src="<?php echo $escrow_img?>"></a></p>
+<?php }?>
+
+</div>

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <esellers translate="label" module="aboutep">
+            <label>Product DB EP</label>
+            <sort_order>200</sort_order>
+        </esellers>
+    </tabs>
+    <sections>
+        <aboutep translate="label">
+            <label>eBay korea about</label>
+            <tab>esellers</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <!-- New groups go here -->
+                <DBEngine translate="label">
+                    <label>Product DB Enging Page Information</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>100</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <active translate="label">
+                            <label>EP USE</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </active>
+                        
+                        <fullepurl translate="label">
+                            <label>Full EP URL</label>
+                            <frontend_type>linkep</frontend_type>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </fullepurl>
+                        <shortepurl translate="label">
+                            <label>Short EP URL</label>
+                            <frontend_type>linksummaryep</frontend_type>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </shortepurl>
+                        <eplabel>
+                            <frontend_type>labelAboutep</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>                     
+                        </eplabel>
+                    </fields>                    
+               </DBEngine>
+            </groups>
+        </aboutep>
+    </sections>
+
+</config>
